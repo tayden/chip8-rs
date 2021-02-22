@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use crate::{Chip8, VIDEO_HEIGHT, VIDEO_WIDTH, FONTSET_START_ADDRESS};
+use crate::{Chip8, FONTSET_START_ADDRESS, VIDEO_HEIGHT, VIDEO_WIDTH};
 
 #[cfg(test)]
 mod tests {
@@ -801,5 +801,63 @@ impl Chip8 {
         let vx = self.vx() as usize;
         let s = self.index as usize;
         self.registers[0..=vx].clone_from_slice(&self.memory[s..=s + vx])
+    }
+
+    fn op_null(&self) { /* NoOp */ }
+
+    pub fn call_op(&mut self) {
+        let n1 = (self.opcode & 0xF000) >> 3;
+        let n34 = self.opcode & 0x00FF;
+        let n4 = self.opcode & 0x000F;
+
+        match n1 {
+            0x0 => match n4 {
+                0x0 => self.op_00e0(),
+                0xE => self.op_00ee(),
+                _ => self.op_null()
+            },
+            0x1 => self.op_1nnn(),
+            0x2 => self.op_2nnn(),
+            0x3 => self.op_3xnn(),
+            0x4 => self.op_4xnn(),
+            0x5 => self.op_5xy0(),
+            0x6 => self.op_6xnn(),
+            0x7 => self.op_7xnn(),
+            0x8 => match n4 {
+                0x0 => self.op_8xy0(),
+                0x1 => self.op_8xy1(),
+                0x2 => self.op_8xy2(),
+                0x3 => self.op_8xy3(),
+                0x4 => self.op_8xy4(),
+                0x5 => self.op_8xy5(),
+                0x6 => self.op_8xy6(),
+                0x7 => self.op_8xy7(),
+                0xE => self.op_8xye(),
+                _ => self.op_null()
+            },
+            0x9 => self.op_9xy0(),
+            0xA => self.op_annn(),
+            0xB => self.op_bnnn(),
+            0xC => self.op_cxkk(),
+            0xD => self.op_dxyn(),
+            0xE => match n34 {
+                0x9E => self.op_ex9e(),
+                0xA1 => self.op_exa1(),
+                _ => self.op_null()
+            },
+            0xF => match n34 {
+                0x07 => self.op_fx07(),
+                0x0A => self.op_fx0a(),
+                0x15 => self.op_fx15(),
+                0x18 => self.op_fx18(),
+                0x1E => self.op_fx1e(),
+                0x29 => self.op_fx29(),
+                0x33 => self.op_fx33(),
+                0x55 => self.op_fx55(),
+                0x65 => self.op_fx65(),
+                _ => self.op_null()
+            },
+            _ => self.op_null()
+        }
     }
 }

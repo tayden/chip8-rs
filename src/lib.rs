@@ -8,18 +8,19 @@ use crate::font::{FONTSET, FONTSET_SIZE};
 mod font;
 mod ops;
 
+const START_ADDRESS: u16 = 0x200;
+const FONTSET_START_ADDRESS: u16 = 0x50;
+
 const PIXEL_ON_CHAR: char = '\u{25A0}';
 const PIXEL_OFF_CHAR: char = ' ';
 
-const START_ADDRESS: u16 = 0x200;
-const FONTSET_START_ADDRESS: u16 = 0x50;
-pub const VIDEO_WIDTH: usize = 64;
-pub const VIDEO_HEIGHT: usize = 32;
+const VIDEO_WIDTH: usize = 64;
+const VIDEO_HEIGHT: usize = 32;
 
 pub struct Chip8 {
+    // TODO: Make these private as much as possible
     pub registers: [u8; 16],
     pub memory: [u8; 4096],
-    // TODO: Make private
     pub index: u16,
     pub pc: u16,
     pub stack: [u16; 16],
@@ -79,10 +80,24 @@ impl Chip8 {
     pub fn draw(&self) {
         self.video.iter().enumerate().for_each(|(i, pixel)| {
             if *pixel != 0 { print!("{}", PIXEL_ON_CHAR) } else { print!("{}", PIXEL_OFF_CHAR) }
-
-            if i != 0 && (i + 1) % VIDEO_WIDTH == 0 {
-                print!("\n");
-            }
+            if (i + 1) % VIDEO_WIDTH == 0 { println!(); }
         })
+    }
+
+    pub fn cycle(&mut self) {
+        // Fetch
+        self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1];
+
+        // Increment the PC before we execute anything
+        self.pc += 2;
+
+        // Decode and execute
+        self.call_op();
+
+        // Decrement the delay timer if it's been set
+        if self.delay_timer > 0 { self.delay_timer -= 1; }
+
+        // Decrement the sound timer if it's been set
+        if self.sound_timer > 0 { self.sound_timer -= 1; }
     }
 }

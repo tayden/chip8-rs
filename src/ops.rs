@@ -6,9 +6,6 @@ use crate::{Chip8, FONTSET_START_ADDRESS, VIDEO_HEIGHT, VIDEO_WIDTH};
 mod tests {
     use std::convert::TryInto;
 
-    use crate::font::FONTSET;
-    use crate::FONTSET_START_ADDRESS;
-
     use super::*;
 
     #[test]
@@ -582,12 +579,16 @@ impl Chip8 {
 
     fn op_6xnn(&mut self) {
         // Set Vx = kk.
-        self.registers[self.vx()] = self.last_byte();
+        let val = self.last_byte();
+        let vx = self.vx();
+        self.registers[vx] = val;
     }
 
     fn op_7xnn(&mut self) {
         // Set Vx = Vx + kk.
-        self.registers[self.vx()] += self.last_byte();
+        let val = self.last_byte();
+        let vx = self.vx();
+        self.registers[vx] = self.registers[vx].wrapping_add(val);
     }
 
     fn op_8xy0(&mut self) {
@@ -693,9 +694,8 @@ impl Chip8 {
         let vy = self.vy();
         let height = self.opcode & 0x000F;
 
-        // Wrap if going beyond screen boundaries
-        let x_pos = self.registers[vx] % VIDEO_WIDTH as u8;
-        let y_pos = self.registers[vy] % VIDEO_HEIGHT as u8;
+        let x_pos = self.registers[vx];
+        let y_pos = self.registers[vy];
 
         self.registers[0xF] = 0;
 
@@ -703,8 +703,12 @@ impl Chip8 {
             let sprite_byte = self.memory[(self.index + row) as usize];
 
             (0..8).collect::<Vec<u16>>().iter().for_each(|col| {
+                // Wrap if going beyond screen boundaries
+                let x_pos = (x_pos as u16 + col) % VIDEO_WIDTH as u16;
+                let y_pos = (y_pos as u16 + row) % VIDEO_HEIGHT as u16;
+
                 let sprite_pixel: u16 = sprite_byte as u16 & (0x80 >> col);
-                let screen_pixel: &mut u32 = &mut self.video[((y_pos as u16 + row) * VIDEO_WIDTH as u16 + (x_pos as u16 + col)) as usize];
+                let screen_pixel: &mut u32 = &mut self.video[(y_pos * VIDEO_WIDTH as u16 + x_pos) as usize];
 
                 // Sprite pixel is on
                 if sprite_pixel != 0 {
@@ -806,7 +810,7 @@ impl Chip8 {
     fn op_null(&self) { /* NoOp */ }
 
     pub fn call_op(&mut self) {
-        let n1 = (self.opcode & 0xF000) >> 3;
+        let n1 = self.opcode >> 4 * 3;
         let n34 = self.opcode & 0x00FF;
         let n4 = self.opcode & 0x000F;
 

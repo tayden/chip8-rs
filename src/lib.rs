@@ -7,6 +7,7 @@ use crate::font::{FONTSET, FONTSET_SIZE};
 
 mod font;
 mod ops;
+pub mod platform;
 
 const START_ADDRESS: u16 = 0x200;
 const FONTSET_START_ADDRESS: u16 = 0x50;
@@ -14,8 +15,8 @@ const FONTSET_START_ADDRESS: u16 = 0x50;
 const PIXEL_ON_CHAR: char = '\u{25A0}';
 const PIXEL_OFF_CHAR: char = ' ';
 
-const VIDEO_WIDTH: usize = 64;
-const VIDEO_HEIGHT: usize = 32;
+pub const VIDEO_WIDTH: usize = 64;
+pub const VIDEO_HEIGHT: usize = 32;
 
 pub struct Chip8 {
     // TODO: Make these private as much as possible
@@ -86,7 +87,7 @@ impl Chip8 {
 
     pub fn cycle(&mut self) {
         // Fetch
-        self.opcode = (self.memory[self.pc] << 8) | self.memory[self.pc + 1];
+        self.opcode = ((self.memory[self.pc as usize] as u16) << 8) | (self.memory[self.pc as usize + 1] as u16);
 
         // Increment the PC before we execute anything
         self.pc += 2;

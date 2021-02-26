@@ -1,8 +1,14 @@
 # CHIP-8 EMULATOR
 
-Written in Rust to get familiar with the language.
+A CHIP-8 emulator written in Rust to get familiar with the language features.
 
-Code based on and modified from the [CHIP-8 emulator tutorial in C++ by Austin Morlan](https://austinmorlan.com/posts/chip8_emulator/) 
+Based on the excellent [C++ CHIP-8 emulator tutorial](https://austinmorlan.com/posts/chip8_emulator/)  by Austin Morlan
+
+<p float="left">
+    <img alt="PONG2" src="https://media.giphy.com/media/lMDeLOlkVHOuj8oNij/giphy.gif" width="32%">
+    <img alt="INVADERS" src="https://media.giphy.com/media/sXFdU3jKMrWbt7H5a1/giphy.gif" width="32%">
+    <img alt="BRIX" src="https://media.giphy.com/media/02Dx8UDcHOcImahLRg/giphy.gif" width="32%">
+</p>
 
 ## Usage:
 
@@ -29,7 +35,7 @@ Z X C V
 The controls can be changed by editing the `platform::get_keycode` static method.
 
 ## ROMs
-There are many free ROMs available for CHIP-8, including [here](https://github.com/loktar00/chip8/tree/master/roms)
+You can download free CHIP-8 ROMs [here](https://github.com/loktar00/chip8/tree/master/roms)
 and [here](https://www.zophar.net/pdroms/chip8/chip-8-games-pack.html)
 
 ## Development

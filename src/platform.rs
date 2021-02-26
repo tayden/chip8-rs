@@ -76,13 +76,11 @@ impl<'tex> Platform<'tex> {
                 Event::KeyDown { keycode, .. } => {
                     if let Some(k) = Self::get_keycode(&keycode) {
                         keys[k] = 1;
-                        break;
                     }
                 }
                 Event::KeyUp { keycode, .. } => {
                     if let Some(k) = Self::get_keycode(&keycode) {
                         keys[k] = 0;
-                        break;
                     }
                 }
                 _ => {}

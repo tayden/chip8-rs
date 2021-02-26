@@ -444,71 +444,211 @@ mod tests {
 
         chp8.op_dxyn();
         assert_eq!(chp8.video[2 * VIDEO_WIDTH + 1], 0xFFFFFFFF);
+    }
 
-        // Load 'F' into memory at location 0
-        // chp8.index = 0;
-        // chp8.memory[0..5].clone_from_slice(&[0xF0, 0x80, 0xF0, 0x80, 0x80][..]);
-        // chp8.opcode = 0xd00A;
-        //
-        // chp8.op_dxyn();
-        // chp8.draw();
-        // println!("{:?}", chp8.video);
+    #[test]
+    fn test_op_ex9e() {
+        // Skip next instruction if key with the value of Vx is pressed.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 0x0;
+        chp8.opcode = 0xE09E;
+        chp8.pc = 0;
+
+        // Key not pressed
+        chp8.keypad[0] = 0;
+
+        assert_eq!(chp8.pc, 0);
+        chp8.op_ex9e();
+        assert_eq!(chp8.pc, 0);
+
+        // Key pressed
+        chp8.keypad[0] = 1;
+
+        assert_eq!(chp8.pc, 0);
+        chp8.op_ex9e();
+        assert_eq!(chp8.pc, 2);
+    }
+
+    #[test]
+    fn test_op_exa1() {
+        // Skip next instruction if key with the value of Vx is not pressed.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 0x0;
+        chp8.opcode = 0xE0A1;
+        chp8.pc = 0;
+
+        // Key pressed
+        chp8.keypad[0] = 1;
+
+        assert_eq!(chp8.pc, 0);
+        chp8.op_exa1();
+        assert_eq!(chp8.pc, 0);
+
+        // Key not pressed
+        chp8.keypad[0] = 0;
+
+        assert_eq!(chp8.pc, 0);
+        chp8.op_exa1();
+        assert_eq!(chp8.pc, 2);
+    }
+
+    #[test]
+    fn test_op_fx07() {
+        // Set Vx = delay timer value.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 0x0;
+        chp8.opcode = 0xF007;
+        chp8.delay_timer = 99;
+
+        assert_ne!(chp8.registers[0x0], 99);
+        chp8.op_fx07();
+        assert_eq!(chp8.registers[0x0], 99);
+    }
+
+    #[test]
+    fn test_op_fx0a() {
+        // Wait for a key press, store the value of the key in Vx.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 0xF;
+        chp8.opcode = 0xF00a;
+
+        assert_eq!(chp8.vx(), 0x0);
+
+        // keypad 0 pressed
+        chp8.keypad[0] = 1;
+
+        assert_ne!(chp8.registers[0x0], 0);
+        chp8.op_fx0a();
+        assert_eq!(chp8.registers[0x0], 0);
+
+        // keypad 0xA pressed
+        chp8.keypad[0] = 0;
+        chp8.keypad[0xA] = 1;
+
+        assert_ne!(chp8.registers[0x0], 0xA);
+        chp8.op_fx0a();
+        assert_eq!(chp8.registers[0x0], 0xA);
+    }
+
+    #[test]
+    fn test_op_fx15() {
+        // Set delay timer = Vx.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 99;
+        chp8.opcode = 0xF015;
+        chp8.delay_timer = 0x0;
+
+        assert_ne!(chp8.delay_timer, 99);
+        chp8.op_fx15();
+        assert_eq!(chp8.delay_timer, 99);
+    }
+
+    #[test]
+    fn test_op_fx18() {
+        // Set sound timer = Vx.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 99;
+        chp8.opcode = 0xF018;
+        chp8.sound_timer = 0x0;
+
+        assert_ne!(chp8.sound_timer, 99);
+        chp8.op_fx18();
+        assert_eq!(chp8.sound_timer, 99);
+    }
+
+    #[test]
+    fn test_op_fx1e() {
+        // Set I = I + Vx.
+        let mut chp8 = Chip8::new();
+        chp8.registers[0x0] = 99;
+        chp8.opcode = 0xF01e;
+        chp8.index = 1;
+
+        assert_eq!(chp8.vx(), 0x0);
+
+        assert_ne!(chp8.index, 100);
+        chp8.op_fx1e();
+        assert_eq!(chp8.index, 100);
     }
 
     // #[test]
-    // fn test_op_ex9e() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_exa1() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx07() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx0a() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx15() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx18() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx1e() {
-    //
-    // }
-    //
-    // #[test]
     // fn test_op_fx29() {
-    //
+    //     // Set I = location of sprite for digit Vx.
+    //     self.index = FONTSET_START_ADDRESS + (5 * self.registers[self.vx() as usize]) as u16;
     // }
-    //
-    // #[test]
-    // fn test_op_fx33() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx55() {
-    //
-    // }
-    //
-    // #[test]
-    // fn test_op_fx65() {
-    //
-    // }
+
+    #[test]
+    fn test_op_fx33() {
+        // Store BCD representation of Vx in memory locations I, I+1, and I+2.
+        // The interpreter takes the decimal value of Vx, and places the hundreds digit in memory at
+        // location in I, the tens digit at location I+1, and the ones digit at location I+2.
+        let mut chp8 = Chip8::new();
+        chp8.index = 0;
+        chp8.memory[0] = 0;
+        chp8.memory[1] = 0;
+        chp8.memory[2] = 0;
+
+        chp8.opcode = 0xF133;
+        assert_eq!(chp8.vx(), 0x1);
+        chp8.registers[0x1] = 123;
+
+        chp8.op_fx33();
+        assert_eq!(chp8.memory[0], 1);
+        assert_eq!(chp8.memory[1], 2);
+        assert_eq!(chp8.memory[2], 3);
+    }
+
+    #[test]
+    fn test_op_fx55() {
+        // Store registers V0 through Vx in memory starting at location I.
+        // let vx = self.vx() as usize;
+        // let s = self.index as usize;
+        // self.memory[s..=s + vx].clone_from_slice(&self.registers[0..=vx])
+        let mut chp8 = Chip8::new();
+        chp8.registers[0] = 1;
+        chp8.registers[1] = 2;
+        chp8.registers[2] = 3;
+        chp8.registers[3] = 4;
+
+        chp8.opcode = 0xF355;
+        assert_eq!(chp8.vx(), 0x3);
+
+        chp8.index = 0x2;
+        chp8.memory[..0x50].iter().for_each(|b| assert_eq!(*b, 0));
+
+        chp8.op_fx55();
+        assert_eq!(chp8.memory[0x2 - 1], 0);
+        assert_eq!(chp8.memory[0x2 + 0], 1);
+        assert_eq!(chp8.memory[0x2 + 1], 2);
+        assert_eq!(chp8.memory[0x2 + 2], 3);
+        assert_eq!(chp8.memory[0x2 + 3], 4);
+        assert_eq!(chp8.memory[0x2 + 4], 0);
+    }
+
+    #[test]
+    fn test_op_fx65() {
+        // Read registers V0 through Vx from memory starting at location I.
+        let mut chp8 = Chip8::new();
+        chp8.opcode = 0xF365;
+        assert_eq!(chp8.vx(), 0x3);
+
+        chp8.memory[0x2 - 1] = 0;
+        chp8.memory[0x2 + 0] = 1;
+        chp8.memory[0x2 + 1] = 2;
+        chp8.memory[0x2 + 2] = 3;
+        chp8.memory[0x2 + 3] = 4;
+        chp8.memory[0x2 + 4] = 0;
+        chp8.index = 0x2;
+
+        chp8.registers.iter().for_each(|b| assert_eq!(*b, 0));
+
+        chp8.op_fx65();
+        chp8.registers[0] = 1;
+        chp8.registers[1] = 2;
+        chp8.registers[2] = 3;
+        chp8.registers[3] = 4;
+
+    }
 }
 
 impl Chip8 {
@@ -790,7 +930,7 @@ impl Chip8 {
         value /= 10;
 
         // Hundreds-place
-        self.memory[(self.index + 1) as usize] = value % 10;
+        self.memory[self.index as usize] = value % 10;
     }
 
     fn op_fx55(&mut self) {
@@ -807,8 +947,6 @@ impl Chip8 {
         self.registers[0..=vx].clone_from_slice(&self.memory[s..=s + vx])
     }
 
-    fn op_null(&self) { /* NoOp */ }
-
     pub fn call_op(&mut self) {
         let n1 = self.opcode >> 4 * 3;
         let n34 = self.opcode & 0x00FF;
@@ -818,7 +956,7 @@ impl Chip8 {
             0x0 => match n4 {
                 0x0 => self.op_00e0(),
                 0xE => self.op_00ee(),
-                _ => self.op_null()
+                _ => {}
             },
             0x1 => self.op_1nnn(),
             0x2 => self.op_2nnn(),
@@ -837,7 +975,7 @@ impl Chip8 {
                 0x6 => self.op_8xy6(),
                 0x7 => self.op_8xy7(),
                 0xE => self.op_8xye(),
-                _ => self.op_null()
+                _ => {}
             },
             0x9 => self.op_9xy0(),
             0xA => self.op_annn(),
@@ -847,7 +985,7 @@ impl Chip8 {
             0xE => match n34 {
                 0x9E => self.op_ex9e(),
                 0xA1 => self.op_exa1(),
-                _ => self.op_null()
+                _ => {}
             },
             0xF => match n34 {
                 0x07 => self.op_fx07(),
@@ -859,9 +997,9 @@ impl Chip8 {
                 0x33 => self.op_fx33(),
                 0x55 => self.op_fx55(),
                 0x65 => self.op_fx65(),
-                _ => self.op_null()
+                _ => {}
             },
-            _ => self.op_null()
+            _ => {}
         }
     }
 }

@@ -1,14 +1,39 @@
+use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, TextureCreator, WindowCanvas};
 use sdl2::Sdl;
 use sdl2::video::WindowContext;
+use crate::SoundState;
+
+struct SquareWave {
+    phase_inc: f32,
+    phase: f32,
+    volume: f32,
+}
+
+impl AudioCallback for SquareWave {
+    type Channel = f32;
+
+    fn callback(&mut self, out: &mut [f32]) {
+        // Generate a square wave
+        for x in out.iter_mut() {
+            *x = if self.phase <= 0.5 {
+                self.volume
+            } else {
+                -self.volume
+            };
+            self.phase = (self.phase + self.phase_inc) % 1.0;
+        }
+    }
+}
 
 pub struct Platform<'tex> {
     context: Sdl,
     canvas: WindowCanvas,
     texture: Texture<'tex>,
+    audio_device: AudioDevice<SquareWave>,
 }
 
 impl<'tex> Platform<'tex> {
@@ -31,14 +56,35 @@ impl<'tex> Platform<'tex> {
         let texture = texture_creator.create_texture_streaming(
             PixelFormatEnum::RGBA8888, texture_width, texture_height).unwrap();
 
-        Platform { context, canvas, texture }
+        let audio_subsystem = context.audio().unwrap();
+        let desired_spec = AudioSpecDesired {
+            freq: Some(44100),
+            channels: Some(1),  // mono
+            samples: None,       // default sample size
+        };
+
+        let audio_device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
+            // initialize the audio callback
+            SquareWave {
+                phase_inc: 440.0 / spec.freq as f32,
+                phase: 0.0,
+                volume: 0.25,
+            }
+        }).unwrap();
+
+        Platform { context, canvas, texture, audio_device }
     }
 
-    pub fn update(&mut self, buffer: &[u32], pitch: usize) {
+    pub fn update(&mut self, buffer: &[u32], pitch: usize, sound_state: &SoundState) {
         self.texture.update(None, unsafe { &buffer.align_to::<u8>().1 }, pitch).unwrap();
         self.canvas.clear();
         self.canvas.copy(&self.texture, None, None).unwrap();
         self.canvas.present();
+
+        match sound_state {
+            SoundState::On => self.audio_device.resume(),
+            SoundState::Off => self.audio_device.pause(),
+        }
     }
 
     fn get_keycode(keycode: &Option<Keycode>) -> Option<usize> {

@@ -15,6 +15,11 @@ const FONTSET_START_ADDRESS: u16 = 0x50;
 pub const VIDEO_WIDTH: usize = 64;
 pub const VIDEO_HEIGHT: usize = 32;
 
+pub enum SoundState {
+    On,
+    Off,
+}
+
 pub struct Chip8 {
     registers: [u8; 16],
     memory: [u8; 4096],
@@ -72,6 +77,15 @@ impl Chip8 {
     fn rand_byte(&mut self) -> u8 {
         // Initial rand_byte
         self.rand_gen.gen_range(0..255u8)
+    }
+
+    /// Returns true is sound is playing
+    pub fn sound_state(&self) -> SoundState {
+        if self.sound_timer > 0 {
+            SoundState::On
+        } else {
+            SoundState::Off
+        }
     }
 
     pub fn cycle(&mut self) {

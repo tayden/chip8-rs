@@ -17,9 +17,9 @@ fn main() {
     let cycle_delay: u128 = args[2].parse().expect("<Delay> must be an integer");
     let rom_filename= &args[3];
 
-    let (context, canvas, mut texture_creator) = Platform::create_window_canvas_texture_creator(
+    let (context, canvas, texture_creator) = Platform::create_window_canvas_texture_creator(
         "CHIP-8 Emulator", VIDEO_WIDTH as u32 * video_scale, VIDEO_HEIGHT as u32 * video_scale);
-    let mut platform = Platform::new(context, canvas, &mut texture_creator, VIDEO_WIDTH as u32, VIDEO_HEIGHT as u32);
+    let mut platform = Platform::new(context, canvas, &texture_creator, VIDEO_WIDTH as u32, VIDEO_HEIGHT as u32);
 
     let mut chip8 = Chip8::new();
     chip8.load_rom(&rom_filename);

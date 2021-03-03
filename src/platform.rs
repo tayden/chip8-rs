@@ -49,7 +49,7 @@ impl<'tex> Platform<'tex> {
         let canvas = window.into_canvas().build().unwrap();
         let texture_creator = canvas.texture_creator();
 
-        return (context, canvas, texture_creator);
+        (context, canvas, texture_creator)
     }
 
     pub fn new(context: Sdl, canvas: WindowCanvas, texture_creator: &'tex TextureCreator<WindowContext>, texture_width: u32, texture_height: u32) -> Self {

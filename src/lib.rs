@@ -35,6 +35,12 @@ pub struct Chip8 {
     rand_gen: Box<dyn RngCore>,
 }
 
+impl Default for Chip8 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Chip8 {
     pub fn new() -> Self {
         // Init memory pointer
@@ -64,11 +70,11 @@ impl Chip8 {
         }
     }
 
-    pub fn load_rom(&mut self, filename: &String) {
+    pub fn load_rom(&mut self, filename: &str) {
         let mut f = fs::File::open(&filename).expect("file not found");
         let metadata = fs::metadata(&filename).expect("unable to read file metadata");
         let mut buffer = vec![0; metadata.len() as usize];
-        f.read(&mut buffer).expect("buffer overflow");
+        f.read_exact(&mut buffer).expect("buffer overflow");
 
         buffer.iter().enumerate()
             .for_each(|(i, b)| self.memory[START_ADDRESS as usize + i] = *b)
@@ -401,7 +407,7 @@ impl Chip8 {
     }
 
     pub fn call_op(&mut self) {
-        let n1 = self.opcode >> 4 * 3;
+        let n1 = self.opcode >> (4 * 3);
         let n34 = self.opcode & 0x00FF;
         let n4 = self.opcode & 0x000F;
 
